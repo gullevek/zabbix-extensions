@@ -17,21 +17,6 @@ if [ '*' = "$hostname" ]; then hostname="127.0.0.1"; fi
 
 poollist=$(psql -h $hostname -p $port -U $username -ltAF: --dbname=$dbname -c "show pools" |cut -d: -f1 |grep -v ^pgbouncer)
 
-printf "{\n";
-printf "\t\"data\":[\n\n";
-
-has_line=0;
-for line in ${poollist}
-do
-	if [ $has_line -eq 1 ];
-	then
-		printf ",\n";
-	fi;
-	printf "\t{\n";
-    printf "\t\t\"{#POOLNAME}\":\"$line\"\n";
-    printf "\t}";
-	has_line=1;
-done
-
-printf "\n\n\t]\n";
-printf "}\n";
+echo -n '{"data":['
+for pool in $poollist; do echo -n "{\"{#POOLNAME}\": \"$pool\"},"; done |sed -e 's:\},$:\}:'
+echo -n ']}'
